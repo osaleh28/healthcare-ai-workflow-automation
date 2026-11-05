@@ -1,0 +1,24 @@
+# Local credentials and environment settings
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.aws/
+
+# Local tooling and operating system files
+.codex/
+.agents/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.log
+
+# Dependencies and generated output
+node_modules/
+__pycache__/
+.venv/
+dist/
+build/

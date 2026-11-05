@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prestige Concierge Medicine Patient Requests</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: narrow single column; practice header, request-type tiles, then a form that adapts to the chosen tile. */
+:root {
+  --bg: #f4f7f6;
+  --surface: #ffffff;
+  --ink: #17302b;
+  --muted: #56706a;
+  --line: #d5e0dd;
+  --accent: #1f6f5c;
+  --accent-ink: #ffffff;
+  --accent-soft: #e2f0ec;
+  --alert: #9b2c1f;
+  --alert-soft: #fbe9e5;
+  --warn-soft: #fff5dc;
+  --warn-ink: #6b4d00;
+  --display: "Fraunces", Georgia, "Times New Roman", serif;
+  --body: "Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1a18; --surface: #162421; --ink: #e3eeeb; --muted: #9bb3ad; --line: #2a3d39;
+    --accent: #5cc4a6; --accent-ink: #0b1714; --accent-soft: #1b3530;
+    --alert: #ff9a86; --alert-soft: #3a1f1a; --warn-soft: #33290f; --warn-ink: #f0d38a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1a18; --surface: #162421; --ink: #e3eeeb; --muted: #9bb3ad; --line: #2a3d39;
+  --accent: #5cc4a6; --accent-ink: #0b1714; --accent-soft: #1b3530;
+  --alert: #ff9a86; --alert-soft: #3a1f1a; --warn-soft: #33290f; --warn-ink: #f0d38a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; display: grid; gap: 24px; }
+header { display: grid; gap: 6px; }
+.practice { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--display); font-weight: 600; font-size: clamp(1.8rem, 4vw, 2.4rem); line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 500; font-size: 1.25rem; margin: 0; text-wrap: balance; }
+.lede { color: var(--muted); margin: 0; max-width: 62ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.9rem; color: var(--muted); }
+.notice { border-radius: 10px; padding: 12px 16px; font-size: 0.93rem; }
+.notice strong { display: block; }
+.emergency { background: var(--alert-soft); color: var(--alert); border-left: 4px solid var(--alert); }
+.demo { background: var(--warn-soft); color: var(--warn-ink); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px; display: grid; gap: 20px; }
+fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 14px; }
+legend { font-family: var(--display); font-size: 1.15rem; font-weight: 500; padding: 0; margin-bottom: 4px; }
+.types { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.type input { position: absolute; opacity: 0; pointer-events: none; }
+.type label { display: grid; gap: 2px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; background: var(--surface); height: 100%; }
+.type label b { font-weight: 600; }
+.type label span { font-size: 0.85rem; color: var(--muted); }
+.type label:hover { border-color: var(--accent); }
+.type input:checked + label { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.type input:focus-visible + label { outline: 3px solid var(--accent); outline-offset: 2px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 520px) { .grid2 { grid-template-columns: 1fr; } .card { padding: 18px; } }
+.field { display: grid; gap: 5px; }
+.field > label, .field > .lbl { font-weight: 500; font-size: 0.93rem; }
+.hint { font-size: 0.83rem; color: var(--muted); }
+input[type="text"], input[type="email"], input[type="tel"], input[type="date"], select, textarea {
+  font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; width: 100%;
+}
+textarea { min-height: 110px; resize: vertical; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+.inline { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.inline label, .check { display: flex; gap: 8px; align-items: flex-start; font-size: 0.93rem; }
+.check input, .inline input { margin-top: 4px; accent-color: var(--accent); }
+.extra[hidden] { display: none; }
+.extra { border-top: 1px dashed var(--line); padding-top: 16px; }
+.err { color: var(--alert); font-size: 0.85rem; min-height: 0; }
+button { font: inherit; font-weight: 600; border: 0; border-radius: 10px; padding: 12px 22px; cursor: pointer; background: var(--accent); color: var(--accent-ink); }
+button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+button[disabled] { opacity: 0.6; cursor: wait; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.actions .hint { flex: 1 1 240px; }
+.done { display: grid; gap: 12px; }
+.done[hidden] { display: none; }
+.ref { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--accent); }
+.preview { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.82rem; white-space: pre-wrap; overflow-x: auto; margin: 0; }
+footer { font-size: 0.83rem; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { .type label, button { transition: background-color .15s, border-color .15s; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="practice">Prestige Concierge Medicine</div>
+    <h1>How can our office help you today?</h1>
+    <p class="lede">Send a request to our care team. It goes straight to the right department: refills to the nurse line, scheduling to the front desk, billing questions to billing.</p>
+    <div class="meta"><span>Office: (504) 555-0142</span><span>Mon–Fri, 8:00 am–5:00 pm</span><span>Most requests answered within 1 business day</span></div>
+  </header>
+
+  <div class="notice emergency" role="note">
+    <strong>For a medical emergency, call 911.</strong>
+    For chest pain, trouble breathing, stroke symptoms, or thoughts of harming yourself, call 911. Do not use this form.
+  </div>
+
+  <div class="notice demo" id="demoBanner" role="note">
+    <strong>Demo page.</strong>
+    Use made-up test information only. Do not enter real patient health information.
+  </div>
+
+  <form class="card" id="reqForm" novalidate>
+    <fieldset>
+      <legend>1. What do you need?</legend>
+      <div class="types" id="types"></div>
+      <div class="err" id="err-type"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>2. About you</legend>
+      <div class="grid2">
+        <div class="field"><label for="name">Full name</label><input type="text" id="name" name="Patient Name" autocomplete="name" required><div class="err" id="err-name"></div></div>
+        <div class="field"><label for="dob">Date of birth</label><input type="date" id="dob" name="Date of Birth" required><div class="err" id="err-dob"></div></div>
+        <div class="field"><label for="phone">Phone</label><input type="tel" id="phone" name="Phone" autocomplete="tel" placeholder="(504) 555-0100" required><div class="err" id="err-phone"></div></div>
+        <div class="field"><label for="email">Email</label><input type="email" id="email" name="email" autocomplete="email" required><div class="err" id="err-email"></div></div>
+      </div>
+      <div class="field">
+        <div class="lbl" id="contact-lbl">Best way to reach you</div>
+        <div class="inline" role="radiogroup" aria-labelledby="contact-lbl">
+          <label><input type="radio" id="c-phone" name="Preferred Contact" value="Phone call" checked> Phone call</label>
+          <label><input type="radio" id="c-text" name="Preferred Contact" value="Text message"> Text message</label>
+          <label><input type="radio" id="c-email" name="Preferred Contact" value="Email"> Email</label>
+        </div>
+      </div>
+      <div class="field">
+        <div class="lbl" id="status-lbl">Have you been seen here before?</div>
+        <div class="inline" role="radiogroup" aria-labelledby="status-lbl">
+          <label><input type="radio" id="s-est" name="Patient Status" value="Established patient" checked> Yes, I'm a current patient</label>
+          <label><input type="radio" id="s-new" name="Patient Status" value="New patient"> No, I'm new</label>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="extra" id="extra-RX" hidden>
+      <fieldset>
+        <legend>Refill details</legend>
+        <div class="grid2">
+          <div class="field"><label for="rx-med">Medication and strength</label><input type="text" id="rx-med" name="Medication" placeholder="e.g. Lisinopril 10 mg"><div class="err" id="err-rx-med"></div></div>
+          <div class="field"><label for="rx-doses">Doses left</label><select id="rx-doses" name="Doses Remaining"><option>More than 7 days</option><option>3–7 days</option><option>Less than 3 days</option><option>Already out</option></select></div>
+        </div>
+        <div class="field"><label for="rx-pharm">Pharmacy name and location</label><input type="text" id="rx-pharm" name="Pharmacy" placeholder="e.g. Walgreens, Magazine St, New Orleans"><div class="err" id="err-rx-pharm"></div></div>
+      </fieldset>
+    </div>
+
+    <div class="extra" id="extra-APPT" hidden>
+      <fieldset>
+        <legend>Appointment details</legend>
+        <div class="grid2">
+          <div class="field"><label for="ap-kind">Visit type</label><select id="ap-kind" name="Visit Type"><option>Follow-up visit</option><option>New problem</option><option>Annual physical / wellness</option><option>Telehealth visit</option></select></div>
+          <div class="field"><label for="ap-when">Preferred times</label><select id="ap-when" name="Preferred Times"><option>Any time</option><option>Mornings</option><option>Afternoons</option><option>First available</option></select></div>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="extra" id="extra-BILL" hidden>
+      <fieldset>
+        <legend>Billing details</legend>
+        <div class="grid2">
+          <div class="field"><label for="bl-stmt">Statement or account number</label><input type="text" id="bl-stmt" name="Statement Number" placeholder="If you have one"></div>
+          <div class="field"><label for="bl-ins">Insurance plan</label><input type="text" id="bl-ins" name="Insurance" placeholder="e.g. Blue Cross Blue Shield of Louisiana"></div>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="extra" id="extra-RESULTS" hidden>
+      <fieldset>
+        <legend>Results details</legend>
+        <div class="grid2">
+          <div class="field"><label for="rs-test">Which test?</label><input type="text" id="rs-test" name="Test" placeholder="e.g. blood work, X-ray"></div>
+          <div class="field"><label for="rs-date">Date of test</label><input type="date" id="rs-date" name="Test Date"></div>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="extra" id="extra-REF" hidden>
+      <fieldset>
+        <legend>Referral details</legend>
+        <div class="field"><label for="rf-spec">Specialist or specialty</label><input type="text" id="rf-spec" name="Referral To" placeholder="e.g. Cardiology, Dr. Landry at Ochsner"></div>
+      </fieldset>
+    </div>
+
+    <fieldset>
+      <legend>3. Your message</legend>
+      <div class="field">
+        <label for="msg">Tell us more</label>
+        <textarea id="msg" name="Message" placeholder="Anything that helps us handle your request quickly."></textarea>
+        <div class="hint">Please keep it brief. Our staff will follow up with you for details.</div>
+        <div class="err" id="err-msg"></div>
+      </div>
+      <label class="check" for="consent"><input type="checkbox" id="consent" name="Consent" value="Yes"> I understand this form is not for emergencies and the office may contact me by the method I chose.</label>
+      <div class="err" id="err-consent"></div>
+    </fieldset>
+
+    <div class="actions">
+      <button type="submit" id="submitBtn">Send request</button>
+      <span class="hint" id="routeHint">Choose a request type to see who will receive it.</span>
+    </div>
+    <div class="err" id="err-submit" role="alert"></div>
+  </form>
+
+  <section class="card done" id="done" hidden aria-live="polite">
+    <h2>Request received</h2>
+    <p style="margin:0">Your reference number is <span class="ref" id="refNum"></span>. <span id="doneRoute"></span> If you don't hear back within one business day, call (504) 555-0142.</p>
+    <div id="previewWrap" hidden>
+      <div class="hint" style="margin-bottom:6px">Demo mode: this is the email the intake inbox would receive. Zapier reads the routing code in the subject line.</div>
+      <pre class="preview" id="preview"></pre>
+    </div>
+    <div><button type="button" id="another">Send another request</button></div>
+  </section>
+
+  <footer>Prestige Concierge Medicine is shown here as a portfolio demo. Requests sent here are routed by an automated workflow and reviewed by staff during office hours.</footer>
+</div>
+
+<script>
+/* ===================== SETUP =====================
+   ENDPOINT: where the form sends submissions.
+   - Leave "" for demo mode (shows the email that would be sent).
+   - FormSubmit (no account needed): "https://formsubmit.co/ajax/YOUR-INTAKE-EMAIL@gmail.com"
+     The first submission triggers a one-time activation email to that address.
+   - Formspree also works: "https://formspree.io/f/YOUR_FORM_ID"
+   ================================================== */
+const CONFIG = {
+  endpoint: "https://formsubmit.co/ajax/osaleh28@gmail.com",
+  practice: "Prestige Concierge Medicine"
+};
+
+/* Each request type has a routing code. The code goes in the email subject,
+   e.g. "[RX] Patient request REQ-...", and Zapier Paths route on it. */
+const TYPES = [
+  { code: "RX",      label: "Prescription refill",  sub: "Refill a current medication", dept: "Nurse / Rx line" },
+  { code: "APPT",    label: "Appointment",          sub: "Schedule, change, or cancel", dept: "Front desk scheduling" },
+  { code: "BILL",    label: "Billing question",     sub: "Statements, payments, insurance", dept: "Billing office" },
+  { code: "RESULTS", label: "Test results",         sub: "Questions about labs or imaging", dept: "Clinical team" },
+  { code: "REF",     label: "Referral",             sub: "Referral to a specialist", dept: "Referral coordinator" },
+  { code: "RECORDS", label: "Medical records",      sub: "Copies or transfer of records", dept: "Medical records" },
+  { code: "GEN",     label: "Something else",       sub: "General question for the office", dept: "Front desk" }
+];
+
+const $ = (id) => document.getElementById(id);
+const form = $("reqForm");
+
+
+$("types").innerHTML = TYPES.map(t => `
+  <div class="type">
+    <input type="radio" name="Request Type" id="t-${t.code}" value="${t.code}">
+    <label for="t-${t.code}"><b>${t.label}</b><span>${t.sub}</span></label>
+  </div>`).join("");
+
+function selectedType() {
+  const r = form.querySelector('input[name="Request Type"]:checked');
+  return r ? TYPES.find(t => t.code === r.value) : null;
+}
+
+form.addEventListener("change", (e) => {
+  if (e.target.name !== "Request Type") return;
+  const t = selectedType();
+  document.querySelectorAll(".extra").forEach(el => { el.hidden = el.id !== "extra-" + t.code; });
+  $("routeHint").textContent = "This request goes to: " + t.dept + ".";
+  $("err-type").textContent = "";
+});
+
+function setErr(id, msg) { const el = $("err-" + id); if (el) el.textContent = msg || ""; return !msg; }
+
+function validate() {
+  let ok = true;
+  const t = selectedType();
+  ok = setErr("type", t ? "" : "Choose what you need help with.") && ok;
+  ok = setErr("name", $("name").value.trim() ? "" : "Enter your full name.") && ok;
+  ok = setErr("dob", $("dob").value ? "" : "Enter your date of birth.") && ok;
+  const digits = $("phone").value.replace(/\D/g, "");
+  ok = setErr("phone", digits.length >= 10 ? "" : "Enter a 10-digit phone number.") && ok;
+  ok = setErr("email", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($("email").value.trim()) ? "" : "Enter a valid email address.") && ok;
+  if (t && t.code === "RX") {
+    ok = setErr("rx-med", $("rx-med").value.trim() ? "" : "Enter the medication you need refilled.") && ok;
+    ok = setErr("rx-pharm", $("rx-pharm").value.trim() ? "" : "Enter your pharmacy.") && ok;
+  } else { setErr("rx-med"); setErr("rx-pharm"); }
+  if (t && (t.code === "GEN" || t.code === "RESULTS")) {
+    ok = setErr("msg", $("msg").value.trim() ? "" : "Tell us briefly what you need.") && ok;
+  } else setErr("msg");
+  ok = setErr("consent", $("consent").checked ? "" : "Please check this box to continue.") && ok;
+  return ok;
+}
+
+function makeRef() {
+  const d = new Date();
+  const ymd = d.getFullYear() + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0");
+  return "REQ-" + ymd + "-" + Math.floor(1000 + Math.random() * 9000);
+}
+
+function collect(t, ref) {
+  const data = {
+    "Routing Code": t.code,
+    "Request Type": t.label,
+    "Department": t.dept,
+    "Reference": ref,
+    "Submitted": new Date().toLocaleString()
+  };
+  // Shared fields plus only the visible extra section
+  const visibleExtra = $("extra-" + t.code);
+  form.querySelectorAll("input, select, textarea").forEach(el => {
+    if (!el.name || el.name === "Request Type") return;
+    const inExtra = el.closest(".extra");
+    if (inExtra && inExtra !== visibleExtra) return;
+    if ((el.type === "radio" || el.type === "checkbox") && !el.checked) return;
+    const v = el.value.trim();
+    if (v) data[el.name] = v;
+  });
+  const first = $("name").value.trim().split(/\s+/)[0] || "Patient";
+  data._subject = `[${t.code}] ${t.label} request ${ref} from ${first}`;
+  data._template = "table";
+  data._captcha = "false";
+  return data;
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  $("err-submit").textContent = "";
+  if (!validate()) {
+    const firstErr = [...document.querySelectorAll(".err")].find(el => el.textContent);
+    if (firstErr) firstErr.scrollIntoView({ block: "center", behavior: "smooth" });
+    return;
+  }
+  const t = selectedType();
+  const ref = makeRef();
+  const data = collect(t, ref);
+  const btn = $("submitBtn");
+
+  if (CONFIG.endpoint) {
+    btn.disabled = true; btn.textContent = "Sending…";
+    try {
+      const res = await fetch(CONFIG.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+    } catch (err) {
+      btn.disabled = false; btn.textContent = "Send request";
+      $("err-submit").textContent = "We couldn't send your request. Check your connection and try again, or call (504) 555-0142.";
+      return;
+    }
+    btn.disabled = false; btn.textContent = "Send request";
+    $("previewWrap").hidden = true;
+  } else {
+    const lines = Object.entries(data).filter(([k]) => !k.startsWith("_")).map(([k, v]) => `${k}: ${v}`);
+    $("preview").textContent = `To: intake@prestigeconcierge.example\nSubject: ${data._subject}\n\n` + lines.join("\n");
+    $("previewWrap").hidden = false;
+  }
+
+  $("refNum").textContent = ref;
+  $("doneRoute").textContent = `It has been sent to our ${t.dept.toLowerCase()}.`;
+  form.hidden = true;
+  $("done").hidden = false;
+  $("done").scrollIntoView({ block: "start" });
+});
+
+$("another").addEventListener("click", () => {
+  form.reset();
+  document.querySelectorAll(".extra").forEach(el => el.hidden = true);
+  document.querySelectorAll(".err").forEach(el => el.textContent = "");
+  $("routeHint").textContent = "Choose a request type to see who will receive it.";
+  $("done").hidden = true;
+  form.hidden = false;
+  window.scrollTo(0, 0);
+});
+</script>
+</body>
+</html>
