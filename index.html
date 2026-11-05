@@ -234,20 +234,19 @@ footer { font-size: 0.83rem; color: var(--muted); }
    ================================================== */
 const CONFIG = {
   endpoint: "https://hooks.zapier.com/hooks/catch/29323281/49eg70p/",
-  recipient: "osaleh28@gmail.com",
   practice: "Prestige Concierge Medicine"
 };
 
-/* Each request type has a routing code. The code goes in the email subject,
-   e.g. "[RX] Patient request REQ-...", and Zapier Paths route on it. */
+/* Each request type supplies its department and recipient to Zapier.
+   Map Gmail's To field to the webhook's Recipient Email field. */
 const TYPES = [
-  { code: "RX",      label: "Prescription refill",  sub: "Refill a current medication", dept: "Nurse / Rx line" },
-  { code: "APPT",    label: "Appointment",          sub: "Schedule, change, or cancel", dept: "Front desk scheduling" },
-  { code: "BILL",    label: "Billing question",     sub: "Statements, payments, insurance", dept: "Billing office" },
-  { code: "RESULTS", label: "Test results",         sub: "Questions about labs or imaging", dept: "Clinical team" },
-  { code: "REF",     label: "Referral",             sub: "Referral to a specialist", dept: "Referral coordinator" },
-  { code: "RECORDS", label: "Medical records",      sub: "Copies or transfer of records", dept: "Medical records" },
-  { code: "GEN",     label: "Something else",       sub: "General question for the office", dept: "Front desk" }
+  { code: "RX",      label: "Prescription refill",  sub: "Refill a current medication", dept: "Nurses Department", recipient: "osaleh28+nurse@gmail.com" },
+  { code: "APPT",    label: "Appointment",          sub: "Schedule, change, or cancel", dept: "Front Desk", recipient: "osaleh28+frontdesk@gmail.com" },
+  { code: "BILL",    label: "Billing question",     sub: "Statements, payments, insurance", dept: "Billing Department", recipient: "osaleh28+billing@gmail.com" },
+  { code: "RESULTS", label: "Test results",         sub: "Questions about labs or imaging", dept: "Nurses Department", recipient: "osaleh28+nurse@gmail.com" },
+  { code: "REF",     label: "Referral",             sub: "Referral to a specialist", dept: "Nurses Department", recipient: "osaleh28+nurse@gmail.com" },
+  { code: "RECORDS", label: "Medical records",      sub: "Copies or transfer of records", dept: "Medical Records Department", recipient: "osaleh28+medicalrecords@gmail.com" },
+  { code: "GEN",     label: "Something else",       sub: "General question for the office", dept: "Front Desk", recipient: "osaleh28+frontdesk@gmail.com" }
 ];
 
 const $ = (id) => document.getElementById(id);
@@ -305,7 +304,7 @@ function collect(t, ref) {
   const data = {
     "Demo": "true",
     "Practice": CONFIG.practice,
-    "Recipient Email": CONFIG.recipient,
+    "Recipient Email": t.recipient,
     "Routing Code": t.code,
     "Request Type": t.label,
     "Department": t.dept,

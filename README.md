@@ -17,7 +17,7 @@ Then visit `http://localhost:8000`. No build step or package installation is req
 Edit the `CONFIG` object near the start of the script in `index.html`:
 
 - `endpoint` is the Webhooks by Zapier Catch Hook URL. Submitting the form sends its fields to Zapier using a form-encoded POST.
-- `recipient` is `osaleh28@gmail.com` for every department in this demo.
+- Each entry in `TYPES` sets the department and recipient email for that request type.
 - Set `endpoint` to an empty string (`""`) to preview submissions locally without sending them.
 - `practice` contains the practice name.
 
@@ -27,15 +27,15 @@ Use made-up test information only, as stated on the form. The submission endpoin
 
 The form includes a routing code in its submission data and email subject. These codes can be used to configure Zapier filters or Paths:
 
-| Code | Request | Department |
-| --- | --- | --- |
-| RX | Prescription refill | Nurse / Rx line |
-| APPT | Appointment | Front desk scheduling |
-| BILL | Billing question | Billing office |
-| RESULTS | Test results | Clinical team |
-| REF | Referral | Referral coordinator |
-| RECORDS | Medical records | Medical records |
-| GEN | General question | Front desk |
+| Code | Request | Department | Recipient email |
+| --- | --- | --- | --- |
+| RX | Prescription refill | Nurses Department | osaleh28+nurse@gmail.com |
+| APPT | Appointment | Front Desk | osaleh28+frontdesk@gmail.com |
+| BILL | Billing question | Billing Department | osaleh28+billing@gmail.com |
+| RESULTS | Test results | Nurses Department | osaleh28+nurse@gmail.com |
+| REF | Referral | Nurses Department | osaleh28+nurse@gmail.com |
+| RECORDS | Medical records | Medical Records Department | osaleh28+medicalrecords@gmail.com |
+| GEN | Something else | Front Desk | osaleh28+frontdesk@gmail.com |
 
 ## Finish the Zapier email workflow
 
@@ -43,11 +43,11 @@ The form includes a routing code in its submission data and email subject. These
 2. Open `index.html` in a browser, complete the form with made-up information, and submit once.
 3. In Zapier's trigger **Test** tab, click **Test trigger** and select that submission.
 4. Add **Gmail → Send Email** and connect the Gmail account you want to send from.
-5. Set **To** to `osaleh28@gmail.com` (or select the webhook's **Recipient Email** field).
+5. Map **To** to the webhook's **Recipient Email** field so the selected request determines the destination. Replace any fixed address already in **To**.
 6. Map **Subject** to **Email Subject**, choose a plain text body, and map **Body** to **Email Body**.
 7. Test the email action, check the demo inbox, and publish the Zap.
 
-All request types use the same demo inbox, so Paths are optional. The email subject includes `[DEMO]` and the routing code, and the body includes the department and submitted fields. Hidden fields for other request types are excluded.
+The form supplies the matching department address in **Recipient Email**, so Paths are optional. These Gmail plus addresses all deliver to the same demo inbox; Gmail filters can apply a department label based on the **To** address. The email subject includes `[DEMO]` and the routing code, and the body includes the department and submitted fields. Hidden fields for other request types are excluded.
 
 A successful form submission confirms that the webhook accepted the request. Email delivery still depends on the Gmail action being configured and the Zap being published. In preview mode (`endpoint: ""`), no webhook request or email is sent.
 
