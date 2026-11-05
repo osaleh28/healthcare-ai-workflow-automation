@@ -216,7 +216,7 @@ footer { font-size: 0.83rem; color: var(--muted); }
     <h2>Request received</h2>
     <p style="margin:0">Your reference number is <span class="ref" id="refNum"></span>. <span id="doneRoute"></span> If you don't hear back within one business day, call (504) 555-0142.</p>
     <div id="previewWrap" hidden>
-      <div class="hint" style="margin-bottom:6px">Demo mode: this is the email the intake inbox would receive. Zapier reads the routing code in the subject line.</div>
+      <div class="hint" style="margin-bottom:6px">Preview only: nothing was sent. This is the email Zapier would send.</div>
       <pre class="preview" id="preview"></pre>
     </div>
     <div><button type="button" id="another">Send another request</button></div>
@@ -229,12 +229,12 @@ footer { font-size: 0.83rem; color: var(--muted); }
 /* ===================== SETUP =====================
    ENDPOINT: where the form sends submissions.
    - Leave "" for demo mode (shows the email that would be sent).
-   - FormSubmit (no account needed): "https://formsubmit.co/ajax/YOUR-INTAKE-EMAIL@gmail.com"
-     The first submission triggers a one-time activation email to that address.
-   - Formspree also works: "https://formspree.io/f/YOUR_FORM_ID"
+   - Use the Catch Hook URL from Webhooks by Zapier.
+   - Configure Gmail's Send Email action in Zapier to send the email.
    ================================================== */
 const CONFIG = {
-  endpoint: "https://formsubmit.co/ajax/osaleh28@gmail.com",
+  endpoint: "https://hooks.zapier.com/hooks/catch/29323281/49eg70p/",
+  recipient: "osaleh28@gmail.com",
   practice: "Prestige Concierge Medicine"
 };
 
@@ -303,6 +303,9 @@ function makeRef() {
 
 function collect(t, ref) {
   const data = {
+    "Demo": "true",
+    "Practice": CONFIG.practice,
+    "Recipient Email": CONFIG.recipient,
     "Routing Code": t.code,
     "Request Type": t.label,
     "Department": t.dept,
@@ -320,9 +323,10 @@ function collect(t, ref) {
     if (v) data[el.name] = v;
   });
   const first = $("name").value.trim().split(/\s+/)[0] || "Patient";
-  data._subject = `[${t.code}] ${t.label} request ${ref} from ${first}`;
-  data._template = "table";
-  data._captcha = "false";
+  data["Email Subject"] = `[DEMO] [${t.code}] ${t.label} request ${ref} from ${first}`;
+  data["Email Body"] = "DEMO ONLY — made-up patient information.\n\n" +
+    Object.entries(data).filter(([key]) => key !== "Email Subject")
+      .map(([key, value]) => `${key}: ${value}`).join("\n");
   return data;
 }
 
@@ -344,8 +348,8 @@ form.addEventListener("submit", async (e) => {
     try {
       const res = await fetch(CONFIG.endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify(data)
+        // Let the browser set a form content type to avoid a CORS preflight.
+        body: new URLSearchParams(data)
       });
       if (!res.ok) throw new Error("HTTP " + res.status);
     } catch (err) {
@@ -356,13 +360,14 @@ form.addEventListener("submit", async (e) => {
     btn.disabled = false; btn.textContent = "Send request";
     $("previewWrap").hidden = true;
   } else {
-    const lines = Object.entries(data).filter(([k]) => !k.startsWith("_")).map(([k, v]) => `${k}: ${v}`);
-    $("preview").textContent = `To: intake@prestigeconcierge.example\nSubject: ${data._subject}\n\n` + lines.join("\n");
+    $("preview").textContent = `To: ${data["Recipient Email"]}\nSubject: ${data["Email Subject"]}\n\n${data["Email Body"]}`;
     $("previewWrap").hidden = false;
   }
 
   $("refNum").textContent = ref;
-  $("doneRoute").textContent = `It has been sent to our ${t.dept.toLowerCase()}.`;
+  $("doneRoute").textContent = CONFIG.endpoint
+    ? `Your demo request was received by the automation for ${t.dept.toLowerCase()}.`
+    : "This was a preview only; no request or email was sent.";
   form.hidden = true;
   $("done").hidden = false;
   $("done").scrollIntoView({ block: "start" });
