@@ -1,4 +1,4 @@
-# Zapier Project
+# Healthcare AI Workflow Automation
 
 A static patient request form for Prestige Concierge Medicine, built with HTML, CSS, and JavaScript. Request types include prescription refills, appointments, billing, results, referrals, medical records, and general questions.
 
